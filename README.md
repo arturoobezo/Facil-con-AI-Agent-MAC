@@ -1,4 +1,4 @@
-# 🤖 Fácil con AI Agent
+# 🤖 Fácil con AI Agent para MAC
 
 Una interfaz web local para usar modelos de inteligencia artificial directamente desde tu navegador, sin suscripciones ni datos en la nube. Powered by [Ollama](https://ollama.com).
 
