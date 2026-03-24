@@ -1,0 +1,570 @@
+/* 
+  Variables de color y formato - Tema Oscuro Moderno y Profesional
+  Utilizamos un esquema de colores basado en tonos profundos (dark mode).
+*/
+:root {
+    --bg-color: #0d1117;           /* Fondo principal */
+    --panel-bg: #161b22;           /* Fondo de los paneles */
+    --border-color: #30363d;       /* Color de los bordes y divisores */
+    --text-primary: #c9d1d9;       /* Texto principal (blanco apagado) */
+    --text-secondary: #8b949e;     /* Texto secundario */
+    --accent-color: #58a6ff;       /* Azul distintivo como acento */
+    --accent-hover: #1f6feb;       /* Acento al hacer hover */
+    --header-height: 60px;         /* Altura del encabezado superior */
+}
+
+/* Reset básico */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Evita scrolls no deseados en la ventana global */
+}
+
+/* =========================================================
+   Encabezado 
+   ========================================================= */
+.header {
+    height: var(--header-height);
+    background-color: var(--panel-bg);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.menu-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.menu-btn:hover {
+    color: var(--accent-color);
+}
+
+.app-logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 4px; /* Opcional por si tu logo es cuadrado duro */
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    background: linear-gradient(90deg, #ffffff, #8b949e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.controls label {
+    font-size: 0.9rem;
+    margin-right: 8px;
+    color: var(--text-secondary);
+}
+
+.controls select {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 6px;
+    outline: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.controls select:focus,
+.controls select:hover {
+    border-color: var(--accent-color);
+}
+
+/* =========================================================
+   Panel Header: Instalador de Inteligencias
+   ========================================================= */
+.header-installer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 20px;
+    padding-left: 20px;
+    border-left: 1px solid var(--border-color);
+}
+
+.header-installer input {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 180px;
+}
+
+.header-installer input:focus {
+    border-color: var(--accent-color);
+}
+
+.header-installer button {
+    background-color: var(--border-color);
+    color: var(--text-primary);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.header-installer button:hover:not(:disabled) {
+    background-color: var(--accent-color);
+    color: #fff;
+}
+
+.header-installer button:disabled {
+    background-color: #555;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.explore-btn {
+    text-decoration: none;
+    font-size: 0.8rem;
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.explore-btn:hover {
+    background-color: var(--accent-color);
+    color: #fff;
+}
+
+/* Feedback de Instalación posicionado absolutamente de forma discreta */
+.installer-status-header {
+    position: absolute;
+    top: 60px; /* Justo debajo del header */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    background-color: var(--panel-bg);
+    padding: 4px 12px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border: 1px solid var(--border-color);
+    border-top: none;
+    z-index: 5;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    /* Ocultamos si no tiene texto (min-height previene que se vea un cuadrito vacío) */
+    display: none; 
+}
+.installer-status-header:not(:empty) {
+    display: block;
+}
+
+/* =========================================================
+   Contenedor principal con Split Screen Flexbox
+   ========================================================= */
+.container {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - var(--header-height));
+}
+
+/* =========================================================
+   Barra lateral (Sidebar) para el historial
+   ========================================================= */
+.sidebar {
+    width: 250px;
+    background-color: var(--panel-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease, padding 0.3s ease, border 0.3s ease;
+    overflow: hidden;
+}
+
+.sidebar.collapsed {
+    width: 0;
+    border-right: none;
+}
+
+.new-chat-btn {
+    margin: 15px;
+    padding: 10px;
+    background-color: var(--accent-color);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.new-chat-btn:hover {
+    background-color: var(--accent-hover);
+}
+
+.session-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.session-item {
+    padding: 12px 15px;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.session-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.delete-session-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1rem;
+    margin-left: 5px;
+    transition: color 0.2s;
+}
+
+.delete-session-btn:hover {
+    color: #ff7b72;
+}
+
+.session-item:hover {
+    background-color: var(--border-color);
+}
+
+.session-item.active {
+    background-color: var(--bg-color);
+    border-left: 3px solid var(--accent-color);
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.left-panel {
+    flex: 1 1 50%; /* Ocupa el 50% por defecto */
+    min-width: 300px;
+    background-color: var(--bg-color);
+}
+
+.right-panel {
+    flex: 1 1 50%; /* Ocupa el 50% por defecto */
+    min-width: 300px;
+}
+
+/* =========================================================
+   Redimensionador (Resizer) deslizable
+   ========================================================= */
+.resizer {
+    width: 6px;
+    background-color: var(--border-color);
+    cursor: col-resize; /* Cursor que indica cambio de tamaño horizontal */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease-in-out;
+    z-index: 5;
+}
+
+.resizer:hover, .resizer:active {
+    background-color: var(--accent-color);
+}
+
+/* =========================================================
+   Panel Izquierdo: Historial de Chat y Formulario
+   ========================================================= */
+.chat-history {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Estilos de los mensajes de chat */
+.message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    line-height: 1.6;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-msg {
+    align-self: flex-end; /* Alineado a la derecha */
+    background-color: var(--accent-color);
+    color: #fff;
+    border-bottom-right-radius: 0;
+}
+
+.ai-msg {
+    align-self: flex-start; /* Alineado a la izquierda */
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-bottom-left-radius: 0;
+    color: var(--text-primary);
+    white-space: pre-wrap; /* Mantiene los saltos de línea y el formato del código */
+    font-family: inherit;
+}
+
+/* Estilo para los bloques de código dentro del mensaje de la IA */
+.ai-msg code {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.9rem;
+}
+
+/* Formulario de Input / Textarea */
+.chat-input-form {
+    padding: 15px;
+    background-color: var(--panel-bg);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+    align-items: center; /* Centrar verticalmente todos los hijos para los switches y clips */
+}
+
+/* =========================================================
+   Estilos de Adjuntos (Clip, Input Hidden y Preview)
+   ========================================================= */
+.chat-input-form textarea {
+    flex: 1;
+    resize: none;
+    height: 45px;
+    min-height: 45px;
+    max-height: 150px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    overflow-y: auto;
+    transition: border-color 0.2s;
+}
+
+/* =========================================================
+   Estilos de Adjuntos (Clip, Input Hidden y Preview)
+   ========================================================= */
+.hidden-file-input {
+    display: none;
+}
+
+.attach-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 5px;
+    transition: color 0.2s, transform 0.1s;
+}
+
+.attach-btn:hover {
+    color: var(--accent-color);
+}
+
+.attachment-preview {
+    margin: 0 15px 10px 15px;
+    padding: 10px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.attachment-preview.hidden {
+    display: none;
+}
+
+.attachment-preview img {
+    max-height: 40px;
+    border-radius: 4px;
+}
+
+.attachment-preview .filename {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.close-preview-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.2s;
+}
+
+.close-preview-btn:hover {
+    color: #ff7b72;
+}
+
+.chat-input-form textarea:focus {
+    border-color: var(--accent-color);
+}
+
+.chat-input-form button {
+    background-color: var(--accent-color);
+    color: #fff;
+    border: none;
+    height: 45px;
+    padding: 0 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.chat-input-form button:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+}
+
+.chat-input-form button:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.chat-input-form button:disabled {
+    background-color: #555;
+    color: #888;
+    cursor: not-allowed;
+}
+
+
+
+/* =========================================================
+   Panel Derecho: Sandbox Header e Iframe
+   ========================================================= */
+.sandbox-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background-color: var(--panel-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sandbox-header h2 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.sandbox-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#downloadCodeBtn {
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 6px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+#downloadCodeBtn:hover {
+    background-color: var(--border-color);
+    color: #fff;
+}
+
+#openNewTabBtn {
+    background-color: transparent;
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    padding: 6px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+#openNewTabBtn:hover {
+    background-color: var(--accent-color);
+    color: #fff;
+}
+
+.iframe-container {
+    flex: 1;
+    background-color: #ffffff; /* Fondo blanco explícito para que el entorno renderizado no sea afectado por el Dark Mode general */
+    background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+    background-size: 20px 20px; /* Un sutil patrón de puntos para indicar que es un lienzo/sandbox mientras esté vacío */
+    position: relative;
+}
+
+iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: transparent; /* Por si el contenido inyecta su propio fondo */
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fácil con AI Agent</title>
+    <!-- Favicon para la pestaña del navegador -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Encabezado superior -->
+    <header class="header">
+        <div class="header-left">
+            <button id="menuToggleBtn" class="menu-btn" title="Historial de Sesiones">☰</button>
+            <img src="logo.png" alt="Logo de Fácil con AI Agent" class="app-logo">
+            <h1>Fácil con AI Agent</h1>
+        </div>
+        <div class="controls">
+            <label for="modelSelect">Modelo:</label>
+            <!-- Selector de modelos locales (Ollama) -->
+            <select id="modelSelect">
+                <option value="">Cargando modelos...</option>
+            </select>
+            
+            <!-- Instalador de Inteligencias reubicado en el Header -->
+            <div class="header-installer">
+                <a href="https://ollama.com/search" target="_blank" class="explore-btn" id="exploreBtn" title="Explorar Biblioteca">🔍 Buscar Modelos</a>
+                <input type="text" id="modelInstallInput" placeholder="Nombre (ej: deepseek-v2)">
+                <button type="button" id="installBtn">🚀 Instalar</button>
+            </div>
+            
+            <!-- Contenedor del estado de instalación reubicado bajo el header de forma absoluta o colindante -->
+        </div>
+        <!-- Ubicamos el status absoluto o aquí al final para feedback -->
+        <div id="installerStatus" class="installer-status-header"></div>
+    </header>
+
+    <!-- Contenedor principal que usa Flexbox para Split Screen -->
+    <main class="container">
+        <!-- Barra de Historial (oculta/desplegable) -->
+        <aside class="sidebar collapsed" id="sidebar">
+            <button id="newChatBtn" class="new-chat-btn">➕ Nueva Sesión</button>
+            <div class="session-list" id="sessionList">
+                <!-- Sesiones inyectadas con localstorage -->
+            </div>
+        </aside>
+
+        <!-- Panel Izquierdo: Interfaz de chat y controles (50% por defecto) -->
+        <section class="panel left-panel" id="leftPanel">
+            <div class="chat-history" id="chatHistory">
+                <!-- Los mensajes generados se insertarán aquí dinámicamente -->
+            </div>
+            
+            <!-- Contenedor para vista previa de archivo -->
+            <div id="attachmentPreview" class="attachment-preview hidden"></div>
+            
+            <!-- Formulario de entrada de prompt -->
+            <form class="chat-input-form" id="chatForm">
+                <button type="button" id="attachBtn" class="attach-btn" title="Adjuntar Archivo">📎</button>
+
+                <input type="file" id="fileInput" class="hidden-file-input" accept=".jpg,.jpeg,.png,.txt,.md,.js,.html,.css" />
+                <textarea id="promptInput" placeholder="Escribe tu instrucción aquí... (Enter para enviar, Shift+Enter para salto de línea)"></textarea>
+                <button type="button" id="sendButton">Enviar</button>
+            </form>
+        </section>
+
+        <!-- Redimensionador (Resizer) para hacer deslizable la división -->
+        <div class="resizer" id="dragMe"></div>
+
+        <!-- Panel Derecho: Sandbox y botones (50% por defecto) -->
+        <section class="panel right-panel" id="rightPanel">
+            <div class="sandbox-header">
+                <h2>Sandbox</h2>
+                <div class="sandbox-actions">
+                    <button id="downloadCodeBtn" title="Guardar como mi_proyecto_ia.html">💾 Descargar Código</button>
+                    <button id="openNewTabBtn">Abrir en nueva pestaña</button>
+                </div>
+            </div>
+            
+            <!-- Contenedor del IFrame donde se pintará el código -->
+            <div class="iframe-container">
+                <iframe id="sandboxIframe"></iframe>
+            </div>
+        </section>
+    </main>
+
+    <!-- Enlace al script de funcionalidad principal -->
+    <script src="script.js"></script>
+</body>
+</html>
