@@ -1,8 +1,18 @@
-# 🤖 Fácil con AI Agent para MAC
+# 🤖 Fácil con AI Agent — macOS
 
 Una interfaz web local para usar modelos de inteligencia artificial directamente desde tu navegador, sin suscripciones ni datos en la nube. Powered by [Ollama](https://ollama.com).
 
 ![Vista previa de la app](screenshot.png)
+
+> 🪟 ¿Usas Windows? El repositorio para Windows está disponible por separado.
+
+---
+
+## 🎬 Video tutorial
+
+Antes de empezar, mira el tutorial completo en YouTube donde explico paso a paso cómo instalar y usar la app:
+
+[![Ver tutorial en YouTube](https://img.youtube.com/vi/nXyvUzSy0BI/0.jpg)](https://www.youtube.com/watch?v=nXyvUzSy0BI)
 
 ---
 
@@ -19,25 +29,18 @@ Una interfaz web local para usar modelos de inteligencia artificial directamente
 
 ## 🖥️ Requisitos
 
-- Tener **Ollama** instalado (el lanzador lo instala automáticamente si no lo tienes)
-- Un navegador moderno (Chrome, Firefox, Edge, Safari)
+- Mac con macOS 12 Monterey o superior
+- Ollama (el lanzador lo instala automáticamente si no lo tienes)
+- Un navegador moderno (Chrome, Firefox, Safari)
 - Conexión a internet **solo** para descargar modelos por primera vez
 
 ---
 
 ## 🚀 Instalación y uso
 
-### Windows
-
 1. Descarga o clona este repositorio
-2. Haz doble clic en **`Facil_con_AI_Agent_Run.bat`**
-3. El lanzador verifica e instala Ollama automáticamente si no lo tienes
-4. Se abre la app en tu navegador
 
-### macOS
-
-1. Descarga o clona este repositorio
-2. Abre la **Terminal** y ejecuta este comando **una sola vez** para dar permisos:
+2. Abre la **Terminal** y ejecuta este comando **una sola vez** para dar permisos al lanzador:
    ```bash
    chmod +x /ruta/a/la/carpeta/Facil_con_AI_Agent_Run.command
    ```
@@ -49,7 +52,7 @@ Una interfaz web local para usar modelos de inteligencia artificial directamente
    - Ve a **Ajustes del Sistema → Privacidad y Seguridad**
    - Busca el mensaje sobre el archivo bloqueado y haz clic en **"Abrir de todas formas"**
 
-5. Se abre la app en tu navegador
+5. ¡Listo! La app se abre automáticamente en tu navegador
 
 ---
 
@@ -69,14 +72,14 @@ Una vez abierta la app, en la barra superior encontrarás el **Instalador de Int
 ## 📁 Estructura del proyecto
 
 ```
-facil-con-ai-agent/
-├── index.html                         # Interfaz principal
-├── style.css                          # Estilos visuales (tema oscuro)
-├── script.js                          # Lógica de la app y conexión con Ollama
-├── Facil_con_AI_Agent_Run.bat         # Lanzador para Windows
-├── Facil_con_AI_Agent_Run.command     # Lanzador para macOS (doble clic)
-├── Facil_con_AI_Agent_Run.sh          # Lanzador para macOS/Linux (Terminal)
-└── logo.png                           # Logo de la app (opcional)
+facil-con-ai-agent-mac/
+├── index.html                          # Interfaz principal
+├── style.css                           # Estilos visuales (tema oscuro)
+├── script.js                           # Lógica de la app y conexión con Ollama
+├── Facil_con_AI_Agent_Run.command      # Lanzador (doble clic desde Finder)
+├── Facil_con_AI_Agent_Run.sh           # Lanzador alternativo desde Terminal
+├── screenshot.png                      # Vista previa
+└── logo.png                            # Logo de la app
 ```
 
 ---
@@ -84,18 +87,18 @@ facil-con-ai-agent/
 ## 🔧 Solución de problemas
 
 **"Ollama inactivo o sin conexión" en el selector de modelos**
-- Asegúrate de haber ejecutado el lanzador (`.bat` en Windows, `.command` en Mac)
+- Asegúrate de haber ejecutado el lanzador `.command` y no haber abierto el `index.html` manualmente
 - Verifica que Ollama esté corriendo: abre una Terminal y escribe `ollama list`
 
-**Error de CORS al abrir `index.html` directo desde el Finder/Explorador**
-- No abras el `index.html` manualmente; usa siempre el lanzador, que configura los permisos necesarios
+**Error de CORS**
+- No abras el `index.html` directamente desde el Finder; usa siempre el lanzador, que configura los permisos necesarios
 
-**macOS: "No se puede abrir porque es de un desarrollador no identificado"**
+**"No se puede abrir porque es de un desarrollador no identificado"**
 - Ve a **Ajustes del Sistema → Privacidad y Seguridad → Abrir de todas formas**
 
 **El modelo tarda mucho en responder**
 - Es normal en la primera respuesta (el modelo se carga en RAM)
-- Modelos más pequeños como `mistral` o `llama3.2:1b` son más rápidos en equipos modestos
+- Modelos más pequeños como `mistral` o `llama3.2:1b` son más rápidos en equipos con poca RAM
 
 ---
 
