@@ -8,6 +8,7 @@ const promptInput = document.getElementById('promptInput');
 const sendButton = document.getElementById('sendButton');
 const sandboxIframe = document.getElementById('sandboxIframe');
 const downloadCodeBtn = document.getElementById('downloadCodeBtn');
+const downloadZipBtn = document.getElementById('downloadZipBtn');
 const openNewTabBtn = document.getElementById('openNewTabBtn');
 
 // Referencias Adjuntos
@@ -32,8 +33,23 @@ const resizer = document.getElementById('dragMe');
 const leftSide = document.getElementById('leftPanel');
 const rightSide = document.getElementById('rightPanel');
 
+// Referencias Gestor de Modelos
+const openModelManagerBtn = document.getElementById('openModelManagerBtn');
+const closeModelManagerBtn = document.getElementById('closeModelManagerBtn');
+const modelManagerModal = document.getElementById('model-manager-modal');
+const modelList = document.getElementById('model-list');
+
 // Variable global para guardar el código actual renderizado en el iframe
 let currentRenderedCode = "";
+const pythonOutput = document.getElementById('python-output');
+let pyodideInstance = null; // Instancia global de Pyodide
+
+// Variable para guardar la última respuesta completa de la IA (para empaquetar en ZIP)
+let lastAiResponse = "";
+
+// Para controlar la cancelación de peticiones
+let currentAbortController = null;
+let isProcessingResponse = false;
 
 // ==========================================
 // LÓGICA DE SPLIT SCREEN (División Deslizable)
@@ -90,7 +106,7 @@ resizer.addEventListener('mousedown', mouseDownHandler);
 // ==========================================
 async function fetchModels() {
     try {
-        const response = await fetch('http://127.0.0.1:11434/api/tags', { mode: 'cors' });
+        const response = await fetch('http://localhost:11434/api/tags', { mode: 'cors' });
         if (!response.ok) throw new Error('Ocurrió un problema conectando con Ollama');
         
         const data = await response.json();
@@ -292,8 +308,24 @@ function addMessageToChat(text, role) {
     saveMessage(text, role);
 }
 
+// Inicialización de Pyodide al cargar la página
+async function setupPyodide() {
+    try {
+        if (!pyodideInstance) {
+            console.log("Inicializando Pyodide...");
+            pyodideInstance = await loadPyodide();
+            console.log("Pyodide listo.");
+        }
+    } catch (err) {
+        console.error("Error al cargar Pyodide:", err);
+    }
+}
+
 // Event Carga inicial (Lógica para determinar desde qué sesión abrimos)
 document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar Pyodide en segundo plano
+    setupPyodide();
+    
     // Limpieza inicial para forzar a borrar lo que sea de BF-Cache de iframes
     currentRenderedCode = "";
     sandboxIframe.removeAttribute('srcdoc');
@@ -309,20 +341,22 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Analizar la respuesta, limpiar etiquetas e inyectar en el Sandbox en tiempo real
-function updateSandbox(text) {
-    const regex = /```(html|css|javascript|js)?\s*([\s\S]*?)```/gi;
+async function updateSandbox(text) {
+    // Regex mejorado para incluir python
+    const regex = /```(html|css|javascript|js|python|py)?\s*([\s\S]*?)```/gi;
     
     let html = '';
     let css = '';
     let js = '';
+    let python = '';
     
     let match;
     while ((match = regex.exec(text)) !== null) {
         const lang = match[1] ? match[1].toLowerCase() : '';
         let code = match[2];
         
-        // Limpieza extra obligatoria por si el modelo escapó la palabra clave dentro del bloque
-        code = code.replace(/^(html|css|javascript|js)\s*/i, '');
+        // Limpieza extra
+        code = code.replace(/^(html|css|javascript|js|python|py)\s*/i, '');
         
         if (lang === 'html') {
             html += code + '\n';
@@ -330,6 +364,8 @@ function updateSandbox(text) {
             css += code + '\n';
         } else if (lang === 'javascript' || lang === 'js') {
             js += code + '\n';
+        } else if (lang === 'python' || lang === 'py') {
+            python += code + '\n';
         } else {
             // Un bloque genérico sin lenguaje
             if (code.includes('<html') || code.includes('<div') || code.includes('<body')) {
@@ -340,8 +376,12 @@ function updateSandbox(text) {
         }
     }
     
-    // En cuanto haya estructura, la ensamblamos al srcdoc de tiempo real
+    // Lógica de alternancia Web vs Python (Prioridad Web si existe estructura visual)
     if (html.trim() || css.trim() || js.trim()) {
+        // Es un proyecto Web
+        pythonOutput.classList.add('hidden');
+        sandboxIframe.classList.remove('hidden');
+
         const combinedCode = `
             <!DOCTYPE html>
             <html lang="es">
@@ -357,11 +397,52 @@ function updateSandbox(text) {
             </html>
         `;
         
-        // Guardar para la funcionalidad de "Nueva Pestaña"
         currentRenderedCode = combinedCode;
-        
-        // Inyectar
         sandboxIframe.srcdoc = combinedCode;
+
+    } else if (python.trim()) {
+        // Es un proyecto Python puro o sin estructura Web
+        sandboxIframe.classList.add('hidden');
+        pythonOutput.classList.remove('hidden');
+        
+        pythonOutput.textContent = '⏳ Ejecutando script de Python...';
+
+        if (!pyodideInstance) {
+            pythonOutput.textContent = '⏳ Cargando motor de Python (Pyodide), por favor espera un momento...';
+            await setupPyodide();
+        }
+
+        try {
+            // Función para limpiar indentación excesiva común (dedent)
+            function dedent(code) {
+                const lines = code.split('\n');
+                while (lines.length > 0 && lines[0].trim() === '') lines.shift();
+                while (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop();
+                if (lines.length === 0) return '';
+                const minIndent = lines.reduce((min, line) => {
+                    if (line.trim() === '') return min;
+                    const match = line.match(/^(\s*)/);
+                    return Math.min(min, match[0].length);
+                }, Infinity);
+                return lines.map(line => line.slice(minIndent)).join('\n');
+            }
+
+            const cleanPython = dedent(python);
+
+            // Redirigir stdout para capturar los print()
+            pyodideInstance.setStdout({
+                batched: (text) => {
+                    if (pythonOutput.textContent.startsWith('⏳')) pythonOutput.textContent = '';
+                    pythonOutput.textContent += text + '\n';
+                    pythonOutput.scrollTop = pythonOutput.scrollHeight;
+                }
+            });
+
+            await pyodideInstance.runPythonAsync(cleanPython);
+        } catch (err) {
+            pythonOutput.textContent += `\n❌ Error de Python:\n${err}`;
+            pythonOutput.scrollTop = pythonOutput.scrollHeight;
+        }
     }
 }
 
@@ -440,10 +521,17 @@ function clearAttachment() {
 
 // ==========================================
 // LÓGICA DE CONEXIÓN Y CHAT CON LA API OLLAMA
-// Al enviar prompt: Petición POST a la API /api/generate
+// Al enviar prompt: Petición POST a la API /api/chat
 // ==========================================
 sendButton.addEventListener('click', async () => {
     
+    // Si ya estamos procesando, este botón ahora sirve para ABORTAR
+    if (isProcessingResponse && currentAbortController) {
+        currentAbortController.abort();
+        console.log("Petición abortada por el usuario.");
+        return;
+    }
+
     const promptText = promptInput.value.trim();
     if (!promptText && !currentAttachment) return; // Permite envio vacío de texto si hay imagen/documento
     
@@ -469,10 +557,16 @@ sendButton.addEventListener('click', async () => {
     chatHistory.appendChild(aiMsgDiv);
     chatHistory.scrollTop = chatHistory.scrollHeight;
     
-    // Desactivar temporalmente controles
-    sendButton.disabled = true;
-    sendButton.textContent = '⏳ Escribiendo...';
-    sendButton.style.backgroundColor = 'var(--text-secondary)';
+    // Activar estado de procesamiento y crear controlador de cancelación
+    isProcessingResponse = true;
+    currentAbortController = new AbortController();
+    const { signal } = currentAbortController;
+
+    // Cambiar visualmente el botón a "Detener"
+    sendButton.textContent = '🛑 Detener';
+    sendButton.title = 'Cancelar respuesta actual';
+    sendButton.style.backgroundColor = '#ff7b72'; // Color de error/peligro
+    
     promptInput.disabled = true;
     attachBtn.disabled = true;
     
@@ -556,13 +650,14 @@ sendButton.addEventListener('click', async () => {
 
     try {
         // Hacemos el request a Ollama apuntando explícitamente a /api/chat
-        const response = await fetch('http://127.0.0.1:11434/api/chat', {
+        const response = await fetch('http://localhost:11434/api/chat', {
             method: 'POST',
             mode: 'cors',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify(requestBody),
+            signal: signal // Usamos la señal del AbortController
         });
         
         if (!response.ok) throw new Error('Error en la comunicación con la API (status no ok).');
@@ -570,24 +665,36 @@ sendButton.addEventListener('click', async () => {
         const data = await response.json();
         const aiResponseText = data.message.content; // Cambio de response -> message.content
         
+        // Guardar la respuesta completa para el empaquetado ZIP inteligente
+        lastAiResponse = aiResponseText;
+        
         // 3. Mostrar la respuesta real de la IA
         aiMsgDiv.textContent = aiResponseText;
         
         // 4. Analizar, limpiar e inyectar el código en tiempo real
-        updateSandbox(aiResponseText);
+        await updateSandbox(aiResponseText);
         
         // 4.1 Guardar el código actual en la sesión activa y registrar mensaje en la memoria global
         saveCodeToSession();
         saveMessage(aiResponseText, 'assistant');
         
     } catch (error) {
-        console.error('Error durante la solicitud a Ollama:', error);
-        aiMsgDiv.textContent = '❌ Hubo un error al procesar tu solicitud. Verifica que Ollama esté corriendo de fondo. CORS en File:// u Ollama Origins podrían causar un problema también.';
-        aiMsgDiv.style.color = '#ff7b72'; // Color rojizo de error en terminal
+        if (error.name === 'AbortError') {
+            aiMsgDiv.textContent = '🛑 Petición detenida por el usuario.';
+            aiMsgDiv.style.color = 'var(--text-secondary)';
+        } else {
+            console.error('Error durante la solicitud a Ollama:', error);
+            aiMsgDiv.textContent = '❌ Hubo un error al procesar tu solicitud. Verifica que Ollama esté corriendo de fondo. CORS en File:// u Ollama Origins podrían causar un problema también.';
+            aiMsgDiv.style.color = '#ff7b72'; // Color rojizo de error en terminal
+        }
     } finally {
         // Restaurar estado visual y funcionalidad de botones
+        isProcessingResponse = false;
+        currentAbortController = null;
+
         sendButton.disabled = false;
         sendButton.textContent = 'Enviar';
+        sendButton.title = '';
         sendButton.style.backgroundColor = ''; // Retorna a estilos via CSS
         promptInput.disabled = false;
         attachBtn.disabled = false;
@@ -618,7 +725,7 @@ installBtn.addEventListener('click', async () => {
         // Puesto que es stream false, la promesa no se resuelve hasta que finaliza la descarga de todo el tamaño
         installerStatus.textContent = '📥 Descargando... (esto puede tardar varios minutos dependiendo de tu conexión y del modelo)';
         
-        const response = await fetch('http://127.0.0.1:11434/api/pull', {
+        const response = await fetch('http://localhost:11434/api/pull', {
             method: 'POST',
             mode: 'cors',
             headers: {
@@ -677,6 +784,89 @@ downloadCodeBtn.addEventListener('click', () => {
 });
 
 // ==========================================
+// FUNCIÓN: DESCARGAR CÓDIGO COMO PROYECTO .ZIP (JSZip Inteligente)
+// ==========================================
+downloadZipBtn.addEventListener('click', () => {
+    if (!lastAiResponse) {
+        alert('No hay código generado para empaquetar. Por favor, realiza una consulta primero.');
+        return;
+    }
+
+    try {
+        const zip = new JSZip();
+        
+        // Expresión regular para detectar bloques de código Markdown: ```lenguaje código ```
+        const regex = /```(\w+)?\n([\s\S]*?)```/g;
+        let match;
+        let fileCount = 0;
+
+        while ((match = regex.exec(lastAiResponse)) !== null) {
+            const lang = (match[1] || '').toLowerCase();
+            const code = match[2];
+            let fileName = '';
+
+            // Asignar nombre de archivo según el lenguaje detectado en el bloque
+            switch (lang) {
+                case 'html':
+                case 'xml':
+                    fileName = 'index.html';
+                    break;
+                case 'css':
+                    fileName = 'style.css';
+                    break;
+                case 'javascript':
+                case 'js':
+                    fileName = 'script.js';
+                    break;
+                case 'python':
+                case 'py':
+                    fileName = 'main.py';
+                    break;
+                case 'json':
+                    fileName = 'data.json';
+                    break;
+                default:
+                    // Si no tiene lenguaje o es desconocido, crear un archivo de texto numerado
+                    fileName = `archivo_texto_${fileCount + 1}.txt`;
+                    break;
+            }
+
+            // Añadir el archivo al ZIP (JSZip maneja automáticamente nombres duplicados si fuera necesario, 
+            // pero aquí sobreescribirá si hay varios bloques del mismo tipo, lo cual es aceptable para un MVP)
+            zip.file(fileName, code.trim());
+            fileCount++;
+        }
+
+        if (fileCount === 0) {
+            alert('No se detectaron bloques de código válidos en la respuesta para empaquetar.');
+            return;
+        }
+
+        // Generar y descargar el ZIP
+        zip.generateAsync({ type: "blob" }).then(function(content) {
+            const url = URL.createObjectURL(content);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "Proyecto_Facil_con_AI.zip";
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            console.log(`ZIP generado con éxito: ${fileCount} archivos incluidos.`);
+        });
+
+    } catch (error) {
+        console.error('Error al generar el archivo ZIP:', error);
+        alert('Hubo un error intentando comprimir tu proyecto.');
+    }
+});
+
+// ==========================================
 // FUNCIÓN: ABRIR CÓDIGO RENDERIZADO EN PESTAÑA NUEVA
 // ==========================================
 openNewTabBtn.addEventListener('click', () => {
@@ -714,3 +904,101 @@ promptInput.addEventListener('input', function() {
     this.style.height = '45px'; // Reinicio básico de tamaño
     this.style.height = (this.scrollHeight) + 'px'; // Expandir según nivel del texto
 });
+
+// ==========================================
+// GESTOR DE MODELOS (MODAL)
+// ==========================================
+
+// Abrir modal
+openModelManagerBtn.addEventListener('click', () => {
+    modelManagerModal.classList.remove('hidden');
+    loadModels();
+});
+
+// Cerrar modal
+closeModelManagerBtn.addEventListener('click', () => {
+    modelManagerModal.classList.add('hidden');
+});
+
+// Cerrar al hacer clic fuera del contenido
+window.addEventListener('click', (e) => {
+    if (e.target === modelManagerModal) {
+        modelManagerModal.classList.add('hidden');
+    }
+});
+
+/**
+ * Carga los modelos instalados desde la API de Ollama y los muestra en el modal
+ */
+async function loadModels() {
+    modelList.innerHTML = '<p style="padding: 20px; color: var(--text-secondary);">Cargando modelos...</p>';
+
+    try {
+        const response = await fetch('http://localhost:11434/api/tags', { mode: 'cors' });
+        if (!response.ok) throw new Error('No se pudo conectar con Ollama');
+
+        const data = await response.json();
+        modelList.innerHTML = '';
+
+        if (data.models && data.models.length > 0) {
+            data.models.forEach(model => {
+                // Convertir bytes a GB (1024^3)
+                const sizeGB = (model.size / (1024 * 1024 * 1024)).toFixed(2);
+                
+                const li = document.createElement('li');
+                li.className = 'model-item';
+                
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'model-info';
+                infoDiv.innerHTML = `
+                    <span class="model-name">${model.name}</span>
+                    <span class="model-size">${sizeGB} GB</span>
+                `;
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-model-btn';
+                deleteBtn.innerHTML = '🗑️ Eliminar';
+                deleteBtn.addEventListener('click', () => deleteModel(model.name));
+                
+                li.appendChild(infoDiv);
+                li.appendChild(deleteBtn);
+                modelList.appendChild(li);
+            });
+        } else {
+            modelList.innerHTML = '<p style="padding: 20px; color: var(--text-secondary);">No tienes modelos instalados.</p>';
+        }
+    } catch (error) {
+        console.error('Error al cargar modelos:', error);
+        modelList.innerHTML = '<p style="padding: 20px; color: #ff7b72;">Error al cargar la lista de modelos. Asegúrate de que Ollama esté activo.</p>';
+    }
+}
+
+/**
+ * Elimina un modelo de Ollama tras confirmación del usuario
+ */
+async function deleteModel(modelName) {
+    const confirmed = confirm(`¿Estás completamente seguro de que deseas eliminar el modelo ${modelName}? Esta acción no se puede deshacer y liberará espacio en tu disco.`);
+    
+    if (!confirmed) return;
+
+    try {
+        const response = await fetch('http://localhost:11434/api/delete', {
+            method: 'DELETE',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: modelName })
+        });
+
+        if (response.ok) {
+            alert(`¡El modelo ${modelName} ha sido eliminado con éxito!`);
+            loadModels(); // Recargar lista
+            fetchModels(); // Actualizar selector del header también
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Error al eliminar el modelo');
+        }
+    } catch (error) {
+        console.error('Error al eliminar modelo:', error);
+        alert('Hubo un error al intentar eliminar el modelo: ' + error.message);
+    }
+}

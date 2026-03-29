@@ -1,95 +1,105 @@
 #!/bin/bash
+
 # ======================================================
-#           INICIANDO: FACIL CON AI AGENT (macOS)
+#           INICIANDO: FACIL CON AI AGENT
+#           Lanzador para macOS y Linux
 # ======================================================
 
 # Colores para la terminal
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
+CYAN='\033[0;36m'
 NC='\033[0m' # Sin color
 
-echo "======================================================"
-echo "          INICIANDO: FACIL CON AI AGENT"
-echo "======================================================"
+echo -e "${CYAN}======================================================"
+echo -e "          INICIANDO: FACIL CON AI AGENT"
+echo -e "======================================================${NC}"
 
-# ── 1. VERIFICAR SI OLLAMA ESTÁ INSTALADO ──────────────
+# -------------------------------------------------------
+# 1. VERIFICAR SI OLLAMA ESTÁ INSTALADO
+# -------------------------------------------------------
 if ! command -v ollama &> /dev/null; then
-    echo -e "${YELLOW}[!] Ollama no detectado. Descargando instalador...${NC}"
-    
-    # Descargar el instalador oficial para Mac
-    curl -L https://ollama.com/download/Ollama-darwin.zip -o /tmp/Ollama-darwin.zip
-    
-    echo -e "${YELLOW}[!] Descomprimiendo...${NC}"
-    unzip -q /tmp/Ollama-darwin.zip -d /tmp/ollama_install
-    
-    echo -e "${YELLOW}[!] Moviendo Ollama a /Applications...${NC}"
-    mv /tmp/ollama_install/Ollama.app /Applications/ 2>/dev/null || true
-    
-    rm -rf /tmp/Ollama-darwin.zip /tmp/ollama_install
-    
-    echo -e "${GREEN}[OK] Ollama instalado en /Applications.${NC}"
-    echo -e "${YELLOW}[!] Ábrelo desde /Applications una vez y luego vuelve a ejecutar este script.${NC}"
-    open /Applications
-    exit 0
+    echo -e "${YELLOW}[!] Ollama no detectado. Instalando...${NC}"
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS: intentar instalar con Homebrew
+        if command -v brew &> /dev/null; then
+            echo -e "${CYAN}[→] Instalando Ollama con Homebrew...${NC}"
+            brew install ollama
+        else
+            echo -e "${RED}[!] Homebrew no encontrado.${NC}"
+            echo -e "${YELLOW}    Por favor instala Ollama manualmente desde: https://ollama.com/download${NC}"
+            echo -e "${YELLOW}    Luego vuelve a ejecutar este script.${NC}"
+            open "https://ollama.com/download" 2>/dev/null || true
+            exit 1
+        fi
+    else
+        # Linux: instalador oficial
+        echo -e "${CYAN}[→] Instalando Ollama en Linux...${NC}"
+        curl -fsSL https://ollama.com/install.sh | sh
+    fi
 else
     echo -e "${GREEN}[OK] Ollama detectado.${NC}"
 fi
 
-# ── 2. CERRAR OLLAMA SI YA ESTÁ CORRIENDO ─────────────
+# -------------------------------------------------------
+# 2. DETENER OLLAMA SI YA ESTÁ CORRIENDO
+# -------------------------------------------------------
 echo -e "${YELLOW}[!] Reiniciando motor con permisos de interfaz...${NC}"
-pkill -f "ollama" 2>/dev/null || true
+pkill -f "ollama serve" 2>/dev/null || true
 sleep 1
 
-# ── 3. CONFIGURAR PERMISOS CORS Y ARRANCAR ────────────
-# Exportamos la variable para que Ollama acepte peticiones desde el navegador (file://)
+# -------------------------------------------------------
+# 3. CONFIGURAR CORS Y ARRANCAR OLLAMA EN SEGUNDO PLANO
+# -------------------------------------------------------
 export OLLAMA_ORIGINS="*"
 
-# Guardamos también de forma permanente en el perfil del usuario
-SHELL_PROFILE=""
-if [ -f "$HOME/.zshrc" ]; then
-    SHELL_PROFILE="$HOME/.zshrc"
-elif [ -f "$HOME/.bash_profile" ]; then
-    SHELL_PROFILE="$HOME/.bash_profile"
-elif [ -f "$HOME/.bashrc" ]; then
-    SHELL_PROFILE="$HOME/.bashrc"
-fi
-
-if [ -n "$SHELL_PROFILE" ]; then
-    if ! grep -q "OLLAMA_ORIGINS" "$SHELL_PROFILE"; then
-        echo 'export OLLAMA_ORIGINS="*"' >> "$SHELL_PROFILE"
-        echo -e "${GREEN}[OK] OLLAMA_ORIGINS guardado en $SHELL_PROFILE${NC}"
-    fi
-fi
-
-# Arrancar el servidor de Ollama en segundo plano
-OLLAMA_ORIGINS="*" ollama serve &> /tmp/ollama_serve.log &
+# Arrancar en segundo plano y guardar el PID
+ollama serve &> /tmp/ollama_facil_ai.log &
 OLLAMA_PID=$!
-echo -e "${GREEN}[OK] Servidor Ollama iniciado (PID: $OLLAMA_PID)${NC}"
+echo -e "${GREEN}[OK] Ollama iniciado (PID: $OLLAMA_PID)${NC}"
 
-# ── 4. ESPERAR A QUE EL MOTOR DESPIERTE ───────────────
+# -------------------------------------------------------
+# 4. ESPERAR A QUE EL SERVIDOR DESPIERTE
+# -------------------------------------------------------
 echo -e "${YELLOW}[!] Esperando 5 segundos a que la IA despierte...${NC}"
 sleep 5
 
-# ── 5. ABRIR INTERFAZ EN EL NAVEGADOR ─────────────────
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-INDEX_FILE="$SCRIPT_DIR/index.html"
-
-if [ -f "$INDEX_FILE" ]; then
-    echo -e "${YELLOW}[!] Lanzando Fácil con AI Agent en el navegador...${NC}"
-    open "$INDEX_FILE"
+# Verificar que Ollama responde
+if curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
+    echo -e "${GREEN}[OK] Servidor de IA activo y respondiendo.${NC}"
 else
-    echo -e "${RED}[ERROR] No se encontró index.html en: $SCRIPT_DIR${NC}"
-    echo "Asegúrate de que este script esté en la misma carpeta que index.html"
-    exit 1
+    echo -e "${RED}[!] Ollama no responde aún. Puede tardar un poco más.${NC}"
 fi
 
-echo "======================================================"
-echo -e "${GREEN}  ¡LISTO! Ya puedes usar tus modelos en el navegador.${NC}"
-echo "  Mantén esta Terminal abierta (o minimizada)."
-echo "  Para detener Ollama: cierra esta Terminal o ejecuta:"
-echo "    pkill -f ollama"
-echo "======================================================"
+# -------------------------------------------------------
+# 5. ABRIR LA INTERFAZ EN EL NAVEGADOR
+# -------------------------------------------------------
+echo -e "${YELLOW}[!] Lanzando Fácil con AI Agent en el navegador...${NC}"
 
-# Mantener el script vivo para que Ollama siga corriendo
+# Obtener la ruta absoluta del directorio donde está el script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+INDEX_PATH="${SCRIPT_DIR}/index.html"
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    open "${INDEX_PATH}"
+elif command -v xdg-open &> /dev/null; then
+    xdg-open "${INDEX_PATH}"
+elif command -v gnome-open &> /dev/null; then
+    gnome-open "${INDEX_PATH}"
+else
+    echo -e "${RED}[!] No se pudo abrir el navegador automáticamente.${NC}"
+    echo -e "${YELLOW}    Abre manualmente este archivo en tu navegador:${NC}"
+    echo -e "    ${INDEX_PATH}"
+fi
+
+echo -e "${CYAN}======================================================"
+echo -e "  ¡LISTO! Ya puedes usar tus modelos en el navegador."
+echo -e "  Ollama corre en segundo plano (PID: $OLLAMA_PID)"
+echo -e "  Para detenerlo: kill $OLLAMA_PID"
+echo -e "======================================================${NC}"
+
+# Mantener el script activo para que Ollama no se detenga al cerrar la terminal
+# (opcional: comenta la siguiente línea si prefieres que corra completamente en background)
 wait $OLLAMA_PID

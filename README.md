@@ -1,122 +1,160 @@
-# 🤖 Fácil con AI Agent — macOS
+# 🤖 Fácil con AI Agent
 
-Una interfaz web local para usar modelos de inteligencia artificial directamente desde tu navegador, sin suscripciones ni datos en la nube. Powered by [Ollama](https://ollama.com).
+<p align="center">
+  <img src="logo.png" alt="Fácil con AI Agent Logo" width="120"/>
+</p>
 
-![Vista previa de la app](screenshot.png)
+<p align="center">
+  <strong>Tu estudio de desarrollo local, impulsado por IA — 100% privado, sin suscripciones, sin nube.</strong>
+</p>
 
-> 🪟 ¿Usas Windows? El repositorio para Windows está disponible por separado.
-
----
-
-## 🎬 Video tutorial
-
-Antes de empezar, mira el tutorial completo en YouTube donde explico paso a paso cómo instalar y usar la app:
-
-[![Ver tutorial en YouTube](https://img.youtube.com/vi/nXyvUzSy0BI/0.jpg)](https://www.youtube.com/watch?v=nXyvUzSy0BI)
-
----
-
-## ✨ ¿Qué hace esta app?
-
-- 💬 **Chat con IA local** — Conversa con cualquier modelo de Ollama (Llama, Mistral, DeepSeek, Gemma, etc.)
-- 🖥️ **Sandbox en vivo** — El código que genera la IA se renderiza al instante en el panel derecho
-- 📦 **Instala modelos desde la app** — Sin usar la Terminal, solo escribe el nombre y dale a instalar
-- 💾 **Historial de sesiones** — Guarda tus conversaciones en el navegador
-- 📎 **Adjunta archivos** — Sube imágenes o archivos de texto como contexto para la IA
-- 🔒 **100% privado** — Todo corre en tu máquina. Ningún dato sale a internet
+<p align="center">
+  <img src="https://img.shields.io/badge/Ollama-compatible-blueviolet?style=flat-square" />
+  <img src="https://img.shields.io/badge/Python-Pyodide-blue?style=flat-square" />
+  <img src="https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white" />
+  <img src="https://img.shields.io/badge/offline-100%25-success?style=flat-square" />
+</p>
 
 ---
 
-## 🖥️ Requisitos
+## ¿Qué es?
 
-- Mac con macOS 12 Monterey o superior
-- Ollama (el lanzador lo instala automáticamente si no lo tienes)
-- Un navegador moderno (Chrome, Firefox, Safari)
-- Conexión a internet **solo** para descargar modelos por primera vez
+**Fácil con AI Agent** es una interfaz de chat local que conecta con tus modelos de IA instalados en [Ollama](https://ollama.com), directamente desde el navegador. Escribe una instrucción, y la IA genera código que se previsualiza al instante en un **Sandbox** interactivo — sin enviar nada a servidores externos.
 
 ---
 
-## 🚀 Instalación y uso
+## ✨ Características
 
-1. Descarga o clona este repositorio
-
-2. Abre la **Terminal** y ejecuta este comando **una sola vez** para dar permisos al lanzador:
-   ```bash
-   chmod +x /ruta/a/la/carpeta/Facil_con_AI_Agent_Run.command
-   ```
-   > 💡 Truco: Arrastra el archivo `.command` a la Terminal y el sistema escribe la ruta solo.
-
-3. Haz doble clic en **`Facil_con_AI_Agent_Run.command`** desde el Finder
-
-4. Si macOS muestra un aviso de seguridad la primera vez:
-   - Ve a **Ajustes del Sistema → Privacidad y Seguridad**
-   - Busca el mensaje sobre el archivo bloqueado y haz clic en **"Abrir de todas formas"**
-
-5. ¡Listo! La app se abre automáticamente en tu navegador
+- 💬 **Chat con contexto** — historial de conversación completo por sesión
+- ⚡ **Sandbox en tiempo real** — previsualiza HTML, CSS y JavaScript al instante
+- 🐍 **Ejecución de Python** — corre scripts Python directamente en el navegador con Pyodide
+- 🗂️ **Múltiples sesiones** — guarda y retoma conversaciones desde el sidebar
+- 📎 **Adjuntos** — sube imágenes o archivos de texto como contexto para la IA
+- 🔗 **Lectura de enlaces** — extrae el contenido de URLs para enriquecer el prompt
+- 📦 **Exportar proyecto** — descarga el resultado como `.html` o como `.zip` con archivos separados
+- 🔍 **Gestor de modelos** — instala, visualiza y elimina modelos de Ollama sin salir del app
+- 🔒 **100% local y privado** — ningún dato sale de tu máquina
 
 ---
 
-## 📥 Cómo descargar modelos de IA
+## 🚀 Inicio rápido en macOS
 
-Una vez abierta la app, en la barra superior encontrarás el **Instalador de Inteligencias**:
+### Paso 1 — Instala Homebrew (si no lo tienes)
 
-1. Haz clic en **🔍 Buscar Modelos** para explorar el catálogo de Ollama
-2. Copia el nombre del modelo que quieras (ej: `llama3`, `mistral`, `deepseek-r1`)
-3. Pégalo en el campo de texto del instalador
-4. Haz clic en **🚀 Instalar** y espera (puede tardar según el tamaño del modelo y tu conexión)
+Abre la app **Terminal** y ejecuta:
 
-> ⚠️ Algunos modelos pesan varios GB. Asegúrate de tener espacio en disco.
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+> Homebrew es el gestor de paquetes más popular para macOS. El script de Fácil con AI lo usa para instalar Ollama automáticamente.
+
+---
+
+### Paso 2 — Descarga un modelo de IA
+
+```bash
+ollama pull llama3
+```
+
+> Explora más modelos en [ollama.com/search](https://ollama.com/search). Si aún no tienes Ollama, el lanzador lo instala por ti en el siguiente paso.
+
+---
+
+### Paso 3 — Lanza la aplicación
+
+**Primera vez:** dale permisos de ejecución al script (solo una vez):
+
+```bash
+chmod +x Facil_con_AI_Agent_Run.sh
+```
+
+Luego ejecútalo:
+
+```bash
+./Facil_con_AI_Agent_Run.sh
+```
+
+O bien: clic derecho sobre el archivo → **Abrir con → Terminal**.
+
+El script automáticamente:
+- Verifica e instala Ollama si no lo tienes (via Homebrew)
+- Configura los permisos CORS necesarios (`OLLAMA_ORIGINS=*`)
+- Reinicia Ollama limpiamente en segundo plano
+- Abre `index.html` en tu navegador predeterminado
+
+---
+
+### Modo manual
+
+Si prefieres arrancar todo a mano desde Terminal:
+
+```bash
+export OLLAMA_ORIGINS="*"
+ollama serve &
+sleep 5
+open index.html
+```
 
 ---
 
 ## 📁 Estructura del proyecto
 
 ```
-facil-con-ai-agent-mac/
-├── index.html                          # Interfaz principal
-├── style.css                           # Estilos visuales (tema oscuro)
-├── script.js                           # Lógica de la app y conexión con Ollama
-├── Facil_con_AI_Agent_Run.command      # Lanzador (doble clic desde Finder)
-├── Facil_con_AI_Agent_Run.sh           # Lanzador alternativo desde Terminal
-├── screenshot.png                      # Vista previa
-└── logo.png                            # Logo de la app
+facil-con-ai-agent/
+├── index.html                    # Interfaz principal
+├── style.css                     # Estilos de la aplicación
+├── script.js                     # Lógica del chat, sandbox y gestor
+├── logo.png                      # Logo de la app
+└── Facil_con_AI_Agent_Run.sh     # Lanzador para macOS
 ```
 
 ---
 
-## 🔧 Solución de problemas
+## 🧩 Dependencias externas (cargadas por CDN)
 
-**"Ollama inactivo o sin conexión" en el selector de modelos**
-- Asegúrate de haber ejecutado el lanzador `.command` y no haber abierto el `index.html` manualmente
-- Verifica que Ollama esté corriendo: abre una Terminal y escribe `ollama list`
-
-**Error de CORS**
-- No abras el `index.html` directamente desde el Finder; usa siempre el lanzador, que configura los permisos necesarios
-
-**"No se puede abrir porque es de un desarrollador no identificado"**
-- Ve a **Ajustes del Sistema → Privacidad y Seguridad → Abrir de todas formas**
-
-**El modelo tarda mucho en responder**
-- Es normal en la primera respuesta (el modelo se carga en RAM)
-- Modelos más pequeños como `mistral` o `llama3.2:1b` son más rápidos en equipos con poca RAM
+| Librería | Uso |
+|---|---|
+| [Pyodide v0.25](https://pyodide.org) | Ejecución de Python en el navegador |
+| [JSZip 3.10](https://stuk.github.io/jszip/) | Empaquetado de proyectos en `.zip` |
+| [Microlink API](https://microlink.io) | Extracción de contenido de URLs |
 
 ---
 
-## 🤝 Contribuciones
+## 🔧 Modelos recomendados
 
-¡Las contribuciones son bienvenidas! Si encuentras un bug o tienes una idea:
+| Modelo | Uso ideal | Comando |
+|---|---|---|
+| `llama3` | Chat general y código | `ollama pull llama3` |
+| `deepseek-coder` | Código y programación | `ollama pull deepseek-coder` |
+| `mistral` | Rápido y eficiente | `ollama pull mistral` |
+| `phi3` | Ligero, ideal para Macs con menos RAM | `ollama pull phi3` |
 
-1. Abre un **Issue** describiendo el problema o la mejora
-2. Haz un **Fork** del repositorio
-3. Crea una rama con tu cambio: `git checkout -b mi-mejora`
-4. Haz un **Pull Request**
+---
+
+## ❓ Preguntas frecuentes
+
+**Me sale "no se puede abrir porque es de un desarrollador no identificado"**  
+Haz clic derecho sobre el archivo `.sh` → **Abrir** → **Abrir de todas formas**. Solo se pide la primera vez.
+
+**¿Por qué el selector dice "Ollama inactivo"?**  
+Asegúrate de que el script esté corriendo y de que no hayas cerrado la Terminal. El script configura `OLLAMA_ORIGINS=*` automáticamente, que es necesario para que el navegador se conecte.
+
+**¿Puedo cerrar la Terminal después de lanzar?**  
+No inmediatamente — Ollama corre mientras el script esté activo. Puedes minimizar la ventana. Para detener Ollama, el script muestra el PID al iniciar; usa `kill <PID>` o simplemente cierra la Terminal cuando termines.
+
+**¿Mis conversaciones se guardan en la nube?**  
+No. Todo se guarda en el `localStorage` de tu navegador, localmente en tu Mac.
+
+**¿Puedo instalar modelos desde la app?**  
+Sí. Usa el campo "Instalar" en el header, escribe el nombre del modelo (ej: `gemma3`) y haz clic en 🚀 Instalar.
 
 ---
 
 ## 📄 Licencia
 
-MIT — Úsalo, modifícalo y distribúyelo libremente.
+MIT — libre para usar, modificar y distribuir.
 
 ---
 
-Hecho con ❤️ para que cualquier persona pueda usar IA local sin complicaciones.
+<p align="center">Hecho con ❤️ para la comunidad hispanohablante de IA local</p>

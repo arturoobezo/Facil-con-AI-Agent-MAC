@@ -7,6 +7,10 @@
     <!-- Favicon para la pestaña del navegador -->
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="stylesheet" href="style.css">
+    <!-- Librería JSZip para descargas de proyectos comprimidos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Motor Pyodide para ejecutar Python en el navegador -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
 </head>
 <body>
     <!-- Encabezado superior -->
@@ -17,11 +21,16 @@
             <h1>Fácil con AI Agent</h1>
         </div>
         <div class="controls">
-            <label for="modelSelect">Modelo:</label>
-            <!-- Selector de modelos locales (Ollama) -->
-            <select id="modelSelect">
-                <option value="">Cargando modelos...</option>
-            </select>
+            <div class="model-group">
+                <label for="modelSelect">Modelo:</label>
+                <!-- Selector de modelos locales (Ollama) -->
+                <select id="modelSelect">
+                    <option value="">Cargando modelos...</option>
+                </select>
+                
+                <!-- Botón para abrir el Gestor de Modelos -->
+                <button id="openModelManagerBtn" class="icon-btn" title="Gestionar Modelos">⚙️</button>
+            </div>
             
             <!-- Instalador de Inteligencias reubicado en el Header -->
             <div class="header-installer">
@@ -29,8 +38,6 @@
                 <input type="text" id="modelInstallInput" placeholder="Nombre (ej: deepseek-v2)">
                 <button type="button" id="installBtn">🚀 Instalar</button>
             </div>
-            
-            <!-- Contenedor del estado de instalación reubicado bajo el header de forma absoluta o colindante -->
         </div>
         <!-- Ubicamos el status absoluto o aquí al final para feedback -->
         <div id="installerStatus" class="installer-status-header"></div>
@@ -74,6 +81,7 @@
                 <h2>Sandbox</h2>
                 <div class="sandbox-actions">
                     <button id="downloadCodeBtn" title="Guardar como mi_proyecto_ia.html">💾 Descargar Código</button>
+                    <button id="downloadZipBtn" title="Descargar como Proyecto .zip">📦 Descargar Proyecto ZIP</button>
                     <button id="openNewTabBtn">Abrir en nueva pestaña</button>
                 </div>
             </div>
@@ -81,9 +89,27 @@
             <!-- Contenedor del IFrame donde se pintará el código -->
             <div class="iframe-container">
                 <iframe id="sandboxIframe"></iframe>
+                <!-- Consola para salida de Python -->
+                <div id="python-output" class="hidden"></div>
             </div>
         </section>
     </main>
+
+    <!-- Modal del Gestor de Modelos -->
+    <div id="model-manager-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Gestor de Modelos Ollama</h2>
+                <button id="closeModelManagerBtn" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">Aquí puedes ver tus modelos instalados y eliminar los que ya no necesites para liberar espacio.</p>
+                <ul id="model-list">
+                    <!-- Los modelos se cargarán aquí dinámicamente -->
+                </ul>
+            </div>
+        </div>
+    </div>
 
     <!-- Enlace al script de funcionalidad principal -->
     <script src="script.js"></script>
