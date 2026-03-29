@@ -39,49 +39,39 @@
 
 ## 🚀 Inicio rápido en macOS
 
-### Paso 1 — Instala Homebrew (si no lo tienes)
+### Paso 1 — Descarga un modelo de IA
 
-Abre la app **Terminal** y ejecuta:
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-> Homebrew es el gestor de paquetes más popular para macOS. El script de Fácil con AI lo usa para instalar Ollama automáticamente.
-
----
-
-### Paso 2 — Descarga un modelo de IA
+Si ya tienes Ollama instalado, abre la Terminal y ejecuta:
 
 ```bash
 ollama pull llama3
 ```
 
-> Explora más modelos en [ollama.com/search](https://ollama.com/search). Si aún no tienes Ollama, el lanzador lo instala por ti en el siguiente paso.
+> Si aún no tienes Ollama, no te preocupes — el lanzador lo instala automáticamente en el siguiente paso.
+
+---
+
+### Paso 2 — Dale permisos al lanzador (solo la primera vez)
+
+Abre la **Terminal** y ejecuta:
+
+```bash
+chmod +x Facil_con_AI_Agent_Run.command
+```
 
 ---
 
 ### Paso 3 — Lanza la aplicación
 
-**Primera vez:** dale permisos de ejecución al script (solo una vez):
+**Doble clic** sobre `Facil_con_AI_Agent_Run.command` desde el Finder.
 
-```bash
-chmod +x Facil_con_AI_Agent_Run.sh
-```
-
-Luego ejecútalo:
-
-```bash
-./Facil_con_AI_Agent_Run.sh
-```
-
-O bien: clic derecho sobre el archivo → **Abrir con → Terminal**.
-
-El script automáticamente:
-- Verifica e instala Ollama si no lo tienes (via Homebrew)
-- Configura los permisos CORS necesarios (`OLLAMA_ORIGINS=*`)
-- Reinicia Ollama limpiamente en segundo plano
+Se abrirá una Terminal y el lanzador automáticamente:
+- Verifica e instala Ollama si no lo tienes
+- Configura los permisos CORS de forma permanente (`OLLAMA_ORIGINS=*`)
+- Inicia Ollama en segundo plano
 - Abre `index.html` en tu navegador predeterminado
+
+> Mantén la ventana de Terminal abierta (puedes minimizarla). Ollama se detiene si la cierras.
 
 ---
 
@@ -102,11 +92,11 @@ open index.html
 
 ```
 facil-con-ai-agent/
-├── index.html                    # Interfaz principal
-├── style.css                     # Estilos de la aplicación
-├── script.js                     # Lógica del chat, sandbox y gestor
-├── logo.png                      # Logo de la app
-└── Facil_con_AI_Agent_Run.sh     # Lanzador para macOS
+├── index.html                          # Interfaz principal
+├── style.css                           # Estilos de la aplicación
+├── script.js                           # Lógica del chat, sandbox y gestor
+├── logo.png                            # Logo de la app
+└── Facil_con_AI_Agent_Run.command      # Lanzador para macOS (doble clic)
 ```
 
 ---
@@ -135,13 +125,13 @@ facil-con-ai-agent/
 ## ❓ Preguntas frecuentes
 
 **Me sale "no se puede abrir porque es de un desarrollador no identificado"**  
-Haz clic derecho sobre el archivo `.sh` → **Abrir** → **Abrir de todas formas**. Solo se pide la primera vez.
+Haz clic derecho sobre `Facil_con_AI_Agent_Run.command` → **Abrir** → **Abrir de todas formas**. Solo se pide la primera vez.
 
 **¿Por qué el selector dice "Ollama inactivo"?**  
-Asegúrate de que el script esté corriendo y de que no hayas cerrado la Terminal. El script configura `OLLAMA_ORIGINS=*` automáticamente, que es necesario para que el navegador se conecte.
+Asegúrate de que la Terminal del lanzador siga abierta. El lanzador configura `OLLAMA_ORIGINS=*` automáticamente, que es necesario para que el navegador se conecte.
 
 **¿Puedo cerrar la Terminal después de lanzar?**  
-No inmediatamente — Ollama corre mientras el script esté activo. Puedes minimizar la ventana. Para detener Ollama, el script muestra el PID al iniciar; usa `kill <PID>` o simplemente cierra la Terminal cuando termines.
+No — Ollama corre mientras la Terminal esté abierta. Puedes minimizarla sin problema. Para detener Ollama simplemente cierra esa ventana cuando termines.
 
 **¿Mis conversaciones se guardan en la nube?**  
 No. Todo se guarda en el `localStorage` de tu navegador, localmente en tu Mac.
